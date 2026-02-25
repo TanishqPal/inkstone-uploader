@@ -9,6 +9,8 @@ Automatically fill and publish chapters from your local `.md` files directly int
 1. **Download / unzip** this folder somewhere on your computer (e.g. your Desktop).
    Keep the folder there permanently — Chrome loads the extension directly from it.
 
+   **Download Here:** https://github.com/Eisenheim-00/inkstone-uploader/releases/tag/Inskstone-Uploader-v1.2
+
 2. Open Chrome and go to:
    ```
    chrome://extensions
