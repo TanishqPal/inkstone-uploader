@@ -8,7 +8,7 @@
   // FILE PICKER UI
   // =========================
   const input = document.createElement('input');
-  input.type = 'file';
+  input.id = 'icu-file-input';  input.type = 'file';
   input.accept = '.txt';
   input.multiple = true;
 
