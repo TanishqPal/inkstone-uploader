@@ -241,16 +241,14 @@
           // just like a plain text paste would
           ed.getBody().focus();
 
-          const dt = new DataTransfer();
-          dt.setData('text/plain', text);
-
-          const pasteEvent = new ClipboardEvent('paste', {
-            bubbles: true,
-            cancelable: true,
-            clipboardData: dt,
-          });
-
-          ed.getBody().dispatchEvent(pasteEvent);
+          // Direct content injection ✅
+          ed.setContent(
+            text
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/\n/g, '<br>')
+          );
           ed.fire('change');
           log('  📝 Body filled via plain text paste');
           return true;
@@ -526,3 +524,4 @@
   }
 
 })();
+
