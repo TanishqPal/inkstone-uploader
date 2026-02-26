@@ -46,22 +46,22 @@
     const { title, body } = parse(text);
 
     setTitle(title);
-    await sleep(400);
+    await sleep(2000);
 
     await waitForEditor();
     setBody(body);
 
-    await sleep(600);
+    await sleep(2000);
     click('PUBLISH');
 
-    await sleep(1000);
+    await sleep(2000);
     click('CONFIRM');
 
     index++;
-    await sleep(2500);
+    await sleep(2000);
 
     click('CREATE CHAPTER');
-    await sleep(2500);
+    await sleep(2000);
 
     run();
   }
