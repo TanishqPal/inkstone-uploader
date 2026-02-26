@@ -5,111 +5,145 @@
   let index = 0;
 
   // =========================
-  // FILE INPUT
+  // FILE PICKER UI
   // =========================
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.txt';
   input.multiple = true;
-  input.style.position = 'fixed';
-  input.style.top = '10px';
-  input.style.right = '10px';
-  input.style.zIndex = 9999;
+
+  Object.assign(input.style, {
+    position: 'fixed',
+    top: '10px',
+    right: '10px',
+    zIndex: 9999,
+    background: '#fff',
+    padding: '6px',
+    border: '1px solid #ccc'
+  });
 
   document.body.appendChild(input);
 
   input.addEventListener('change', e => {
     files = Array.from(e.target.files);
     index = 0;
-    processNext();
+    run();
   });
 
   // =========================
-  // CORE LOGIC
+  // MAIN LOOP
   // =========================
-  async function processNext() {
+  async function run() {
     if (index >= files.length) {
-      console.log('Done');
+      console.log('All chapters uploaded');
       return;
     }
 
     const file = files[index];
+    console.log('Processing:', file.name);
+
     const text = await file.text();
+    const { title, body } = parse(text);
 
-    const { title, body } = parseChapter(text);
+    setTitle(title);
+    await sleep(400);
 
-    fillTitle(title);
-    fillBody(body);
+    await waitForEditor();
+    setBody(body);
 
-    await sleep(500);
+    await sleep(600);
+    click('PUBLISH');
 
-    clickPublish();
     await sleep(1000);
-    clickConfirm();
+    click('CONFIRM');
 
     index++;
-    await sleep(2000);
+    await sleep(2500);
 
-    clickCreateChapter();
-    await sleep(2000);
+    click('CREATE CHAPTER');
+    await sleep(2500);
 
-    processNext();
+    run();
   }
 
   // =========================
-  // PARSE CHAPTER
+  // PARSE FILE
   // =========================
-  function parseChapter(text) {
+  function parse(text) {
     const lines = text.split('\n');
 
-    const title = lines[0].trim(); // first line = chapter title
-    const body = lines.slice(1).join('\n').trim();
-
-    return { title, body };
+    return {
+      title: lines[0].trim(),
+      body: lines.slice(1).join('\n').trim()
+    };
   }
 
   // =========================
-  // DOM HELPERS
+  // TITLE
   // =========================
-  function fillTitle(text) {
-    const el = document.querySelector('input[placeholder*="Title"]');
-    if (!el) return;
+  function setTitle(text) {
+    const el =
+      document.querySelector('input[placeholder="Title Here"]') ||
+      document.querySelector('input[placeholder*="Title"]');
 
+    if (!el) {
+      console.log('Title input not found');
+      return;
+    }
+
+    el.focus();
     el.value = text;
     el.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  function fillBody(text) {
-    const el = document.querySelector('textarea, [contenteditable="true"]');
-    if (!el) return;
+  // =========================
+  // BODY (TinyMCE iframe)
+  // =========================
+  function setBody(text) {
+    const iframe = document.querySelector('.tox-edit-area__iframe');
+    if (!iframe) {
+      console.log('Editor iframe not found');
+      return;
+    }
 
-    el.focus();
-    document.execCommand('selectAll', false, null);
-    document.execCommand('insertText', false, text);
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    const body = doc.body;
+
+    body.innerHTML = '';
+    body.innerText = text;
   }
 
-  function clickPublish() {
-    const btn = findButton('PUBLISH');
-    if (btn) btn.click();
+  // =========================
+  // WAIT FOR EDITOR READY
+  // =========================
+  async function waitForEditor() {
+    for (let i = 0; i < 25; i++) {
+      const iframe = document.querySelector('.tox-edit-area__iframe');
+      if (iframe && iframe.contentDocument?.body) return;
+      await sleep(200);
+    }
+    console.log('Editor load timeout');
   }
 
-  function clickConfirm() {
-    const btn = findButton('CONFIRM');
-    if (btn) btn.click();
+  // =========================
+  // BUTTON CLICK
+  // =========================
+  function click(label) {
+    const btn = Array.from(document.querySelectorAll('button, a'))
+      .find(el => el.textContent.trim().toUpperCase().includes(label));
+
+    if (btn) {
+      btn.click();
+    } else {
+      console.log(label, 'button not found');
+    }
   }
 
-  function clickCreateChapter() {
-    const btn = findButton('CREATE CHAPTER');
-    if (btn) btn.click();
-  }
-
-  function findButton(text) {
-    return Array.from(document.querySelectorAll('button, a'))
-      .find(el => el.textContent.trim().toUpperCase().includes(text));
-  }
-
+  // =========================
+  // UTILS
+  // =========================
   function sleep(ms) {
-    return new Promise(r => setTimeout(r, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
 })();
